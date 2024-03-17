@@ -1,4 +1,4 @@
-## Short Description
+## VeRide
 **Drive e-scooter adoption with VeChain**, rewarding responsible usage and community participation with VET, fostering a community-managed platform for eco-friendly commuting.
 
 ### College/Employer
