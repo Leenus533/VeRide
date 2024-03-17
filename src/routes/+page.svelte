@@ -1,62 +1,19 @@
 <script lang="ts">
-  import { writable } from "svelte/store";
+  import { onMount } from "svelte";
   import { DAppKitUI } from "@vechain/dapp-kit-ui";
   import * as Dialog from "$lib/components/ui/dialog";
   import Button from "$lib/components/ui/button/button.svelte";
+  import { writable } from "svelte/store";
   import { env } from "$env/dynamic/public";
-  import { onMount } from "svelte";
+  import TaskList from "$lib/components/TaskList.svelte";
+  import ConfirmationDialog from "$lib/components/ConfirmationDialog.svelte";
+  import { generateRandomPoint } from "$lib/extra";
 
-  const user: any = writable(null);
-  const vetPerMin = 10;
-  const walletConnectOptions = {
-    projectId: "a0b855ceaf109dbc8426479a4c3d38d8",
-    metadata: {
-      name: "VeRide",
-      description: "A Decentralized Application for Sharing Electric Bikes",
-      url: window.location.origin,
-      icons: [`${window.location.origin}/images/logo/my-dapp.png`],
-    },
-  };
-
-  let isDialogOpen = false;
-  let selectedButton = "Ride";
-  let isTaskDialogOpen = false;
+  let user = writable(null);
+  let tasks = [];
   let selectedTask = null;
-
-  const rentTheBike = async (marker: google.maps.Marker) => {
-    isDialogOpen = true;
-  };
-
-  const confirmRent = async () => {
-    isDialogOpen = false;
-  };
-
-  const acceptTask = (task) => {
-    selectedTask = task;
-    isTaskDialogOpen = true;
-  };
-
-  const confirmAcceptTask = async () => {
-    isTaskDialogOpen = false;
-    // Perform task acceptance logic here
-  };
-
-  const vechainDAppKitOptions = {
-    nodeUrl: "https://testnet.vechain.org/",
-    genesis: "test",
-    walletConnectOptions,
-    usePersistence: true,
-  };
-
-  DAppKitUI.configure(vechainDAppKitOptions);
-
-  DAppKitUI.modal.onConnectionStatusChange((status) => {
-    user.set(status);
-    if (status) {
-      initMap();
-    }
-  });
-
+  let isTaskDialogOpen = false;
+  let isDialogOpen = false;
   let map: google.maps.Map;
   let markers: google.maps.Marker[] = [];
   let mapElement: HTMLElement;
@@ -79,106 +36,7 @@
     },
   ];
 
-  let tasks = [
-    {
-      vehicleName: "E-scooter#3102",
-      vehicle: "E-Scooter",
-      distance: 2.0,
-      reward: 12,
-      taskType: "Relocate",
-    },
-    {
-      vehicleName: "E-bike#0473",
-      vehicle: "E-Bike",
-      distance: 0.8,
-      reward: 8,
-      taskType: "Repair",
-    },
-    {
-      vehicleName: "Scooter#8942",
-      vehicle: "Scooter",
-      distance: 1.2,
-      reward: 9,
-      taskType: "Charge",
-    },
-    {
-      vehicleName: "Bike#4382",
-      vehicle: "Bike",
-      distance: 4.0,
-      reward: 25,
-      taskType: "Relocate",
-    },
-    {
-      vehicleName: "E-scooter#6731",
-      vehicle: "E-Scooter",
-      distance: 3.0,
-      reward: 18,
-      taskType: "Repair",
-    },
-    {
-      vehicleName: "E-bike#2951",
-      vehicle: "E-Bike",
-      distance: 2.2,
-      reward: 13,
-      taskType: "Charge",
-    },
-    {
-      vehicleName: "Scooter#1579",
-      vehicle: "Scooter",
-      distance: 3.8,
-      reward: 22,
-      taskType: "Relocate",
-    },
-    {
-      vehicleName: "Bike#4621",
-      vehicle: "Bike",
-      distance: 1.0,
-      reward: 10,
-      taskType: "Repair",
-    },
-    {
-      vehicleName: "E-scooter#1985",
-      vehicle: "E-Scooter",
-      distance: 4.5,
-      reward: 27,
-      taskType: "Charge",
-    },
-    {
-      vehicleName: "E-bike#0234",
-      vehicle: "E-Bike",
-      distance: 3.2,
-      reward: 19,
-      taskType: "Relocate",
-    },
-  ];
-
-  // Sort tasks by distance from the user
-  let sortCriteria = "";
-
-  function sortTasks() {
-    if (sortCriteria === "distance") {
-      tasks = tasks.sort((a, b) => a.distance - b.distance);
-    } else if (sortCriteria === "reward") {
-      tasks = tasks.sort((a, b) => b.reward - a.reward);
-    } else if (sortCriteria === "taskType") {
-      tasks = tasks.sort((a, b) => a.taskType.localeCompare(b.taskType));
-    } else if (sortCriteria === "vehicleType") {
-      tasks = tasks.sort((a, b) => a.vehicle.localeCompare(b.vehicle));
-    }
-  }
-
-  function getVehicleEmoji(vehicle: string): string {
-    switch (vehicle) {
-      case "E-Bike":
-        return "🛵";
-      case "Scooter":
-        return "🛴";
-      case "Bike":
-        return "🚲";
-      default:
-        return "";
-    }
-  }
+  const vetPerMin = 10;
 
   function initMap() {
     const currentLocationIcon = {
@@ -264,19 +122,19 @@
           const duration = route.legs[0].duration;
           if (duration) {
             const infowindowContent = `
-            <div id="infowindow-content">
-              <p>Approximate walking time: ${duration.text}</p>
-              <p>Estimated arrival time: ${new Date(
-                Date.now() + duration.value * 1000
-              ).toLocaleTimeString([], {
-                hour: "2-digit",
-                minute: "2-digit",
-                hour12: false,
-              })}</p>
-              <p>Price: ${vetPerMin} VET</p>
-              <button id="rent-bike-button" class="bg-green-400 text-white px-4 py-2 rounded">Reserve Now</button>
-            </div>
-          `;
+              <div id="infowindow-content">
+                <p>Approximate walking time: ${duration.text}</p>
+                <p>Estimated arrival time: ${new Date(
+                  Date.now() + duration.value * 1000
+                ).toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  hour12: false,
+                })}</p>
+                <p>Price: ${vetPerMin} VET</p>
+                <button id="rent-bike-button" class="bg-green-400 text-white px-4 py-2 rounded">Reserve Now</button>
+              </div>
+            `;
             const infowindow = new google.maps.InfoWindow({
               content: infowindowContent,
             });
@@ -292,46 +150,139 @@
     }
   }
 
-  function generateRandomPoint(
-    latitude: number,
-    longitude: number,
-    radius: number
-  ) {
-    const x0 = longitude;
-    const y0 = latitude;
-    const rd = radius / 111300;
+  const walletConnectOptions = {
+    projectId: "a0b855ceaf109dbc8426479a4c3d38d8",
+    metadata: {
+      name: "VeRide",
+      description: "A Decentralized Application for Sharing Electric Bikes",
+      url: window.location.origin,
+      icons: [`${window.location.origin}/images/logo/my-dapp.png`],
+    },
+  };
 
-    const u = Math.random();
-    const v = Math.random();
+  const vechainDAppKitOptions = {
+    nodeUrl: "https://testnet.vechain.org/",
+    genesis: "test",
+    walletConnectOptions,
+    usePersistence: true,
+  };
 
-    const w = rd * Math.sqrt(u);
-    const t = 2 * Math.PI * v;
-    const x = w * Math.cos(t);
-    const y = w * Math.sin(t);
+  DAppKitUI.configure(vechainDAppKitOptions);
 
-    const xp = x / Math.cos(y0);
-
-    const newLongitude = xp + x0;
-    const newLatitude = y + y0;
-
-    return { lat: newLatitude, lng: newLongitude };
-  }
+  DAppKitUI.modal.onConnectionStatusChange((status) => {
+    user.set(status);
+    if ($user) {
+      initMap();
+    }
+  });
 
   onMount(() => {
     user.set(DAppKitUI.wallet.state.address);
+    if ($user) {
+      tasks = [
+        {
+          vehicleName: "E-scooter#3102",
+          vehicle: "E-Scooter",
+          distance: 2.0,
+          reward: 12,
+          taskType: "Relocate",
+        },
+        {
+          vehicleName: "E-bike#0473",
+          vehicle: "E-Bike",
+          distance: 0.8,
+          reward: 8,
+          taskType: "Repair",
+        },
+        {
+          vehicleName: "Scooter#8942",
+          vehicle: "Scooter",
+          distance: 1.2,
+          reward: 9,
+          taskType: "Charge",
+        },
+        {
+          vehicleName: "Bike#4382",
+          vehicle: "Bike",
+          distance: 4.0,
+          reward: 25,
+          taskType: "Relocate",
+        },
+        {
+          vehicleName: "E-scooter#6731",
+          vehicle: "E-Scooter",
+          distance: 3.0,
+          reward: 18,
+          taskType: "Repair",
+        },
+        {
+          vehicleName: "E-bike#2951",
+          vehicle: "E-Bike",
+          distance: 2.2,
+          reward: 13,
+          taskType: "Charge",
+        },
+        {
+          vehicleName: "Scooter#1579",
+          vehicle: "Scooter",
+          distance: 3.8,
+          reward: 22,
+          taskType: "Relocate",
+        },
+        {
+          vehicleName: "Bike#4621",
+          vehicle: "Bike",
+          distance: 1.0,
+          reward: 10,
+          taskType: "Repair",
+        },
+        {
+          vehicleName: "E-scooter#1985",
+          vehicle: "E-Scooter",
+          distance: 4.5,
+          reward: 27,
+          taskType: "Charge",
+        },
+        {
+          vehicleName: "E-bike#0234",
+          vehicle: "E-Bike",
+          distance: 3.2,
+          reward: 19,
+          taskType: "Relocate",
+        },
+      ];
+    }
     if ($user) {
       window.onload = function () {
         initMap();
       };
     }
   });
+
+  function acceptTask(task) {
+    selectedTask = task;
+    isTaskDialogOpen = true;
+  }
+
+  function confirmAcceptTask() {
+    isTaskDialogOpen = false;
+    // Perform task acceptance logic here
+  }
+
+  function rentTheBike(marker) {
+    isDialogOpen = true;
+  }
+  function confirmRent() {
+    isDialogOpen = false;
+  }
+  $: user, isDialogOpen, selectedTask;
 </script>
 
 <svelte:head>
   <script
+    defer
     async
     src={`https://maps.googleapis.com/maps/api/js?key=${env.PUBLIC_GOOGLE_MAPS_KEY}`}
-    defer
   ></script>
 </svelte:head>
 
@@ -348,102 +299,44 @@
       </div>
     </div>
   </div>
+
   {#if $user}
     <div class="relative min-h-[50%]">
       <div id="map" style="height: 400px;" bind:this={mapElement}></div>
-      {#if map}
-        <Dialog.Root
-          onOpenChange={(change) => (isDialogOpen = change)}
-          open={isDialogOpen}
-        >
-          <Dialog.Content>
-            <Dialog.Header>
-              <Dialog.Title>Are you sure?</Dialog.Title>
-              <Dialog.Description>
-                Current Cost is {vetPerMin} VET per minute
-              </Dialog.Description>
-            </Dialog.Header>
-            <Dialog.Footer>
-              <Button variant="outline" on:click={() => (isDialogOpen = false)}
-                >Cancel</Button
-              >
-              <Button variant="outline" on:click={confirmRent}>Confirm</Button>
-            </Dialog.Footer>
-          </Dialog.Content>
-        </Dialog.Root>
-      {/if}
     </div>
-    <section>
-      <div class="flex items-center justify-between">
-        <h2 class="text-2xl font-bold mt-4">Tasks</h2>
-        <div>
-          <select
-            class="bg-gray-200 px-4 py-2 rounded"
-            bind:value={sortCriteria}
-            on:change={sortTasks}
-          >
-            <option value="">Sort by</option>
-            <option value="distance">Distance</option>
-            <option value="reward">Reward</option>
-            <option value="taskType">Task Type</option>
-            <option value="vehicleType">Vehicle Type</option>
-          </select>
-        </div>
-      </div>
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
-        {#each tasks as task}
-          <div class="bg-white rounded-lg shadow-md p-4 flex">
-            <div class="flex-1">
-              <div class="flex items-center">
-                <h3 class="text-xl font-semibold">{task.vehicleName}</h3>
-              </div>
-              <p class="text-gray-500 mt-2">Distance: {task.distance} km</p>
-              <p class="text-gray-500">Reward: {task.reward} VET</p>
-              <p class="text-gray-500">Task Type: {task.taskType}</p>
-              <button
-                class="bg-green-500 text-white px-4 py-2 rounded mt-4"
-                on:click={() => acceptTask(task)}
-              >
-                Accept Task
-              </button>
-            </div>
-            <div class="ml-4 flex items-center justify-center">
-              <span class="text-6xl">{getVehicleEmoji(task.vehicle)}</span>
-            </div>
-          </div>
-        {/each}
-      </div>
+    <TaskList {tasks} on:accept={acceptTask} />
 
-      {#if selectedTask}
-        <Dialog.Root
-          onOpenChange={(change) => (isTaskDialogOpen = change)}
-          open={isTaskDialogOpen}
-        >
-          <Dialog.Overlay
-            class="fixed inset-0 bg-black bg-opacity-50 backdrop-filter backdrop-blur-sm"
-          />
-          <Dialog.Content
-            class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg shadow-lg p-6 max-w-md w-full"
-          >
-            <Dialog.Header>
-              <Dialog.Title>Confirm Task Acceptance</Dialog.Title>
-              <Dialog.Description>
-                Are you sure you want to accept the task "{selectedTask.vehicleName}"?
-              </Dialog.Description>
-            </Dialog.Header>
-            <Dialog.Footer>
-              <Button
-                variant="outline"
-                on:click={() => (isTaskDialogOpen = false)}>Cancel</Button
-              >
-              <Button variant="outline" on:click={confirmAcceptTask}
-                >Accept Task</Button
-              >
-            </Dialog.Footer>
-          </Dialog.Content>
-        </Dialog.Root>
-      {/if}
-    </section>
+    {#if isDialogOpen}
+      <Dialog.Root
+        onOpenChange={(change) => (isDialogOpen = change)}
+        open={isDialogOpen}
+      >
+        <Dialog.Content>
+          <Dialog.Header>
+            <Dialog.Title>Are you sure?</Dialog.Title>
+            <Dialog.Description>
+              Current Cost is {vetPerMin} VET per minute
+            </Dialog.Description>
+          </Dialog.Header>
+          <Dialog.Footer>
+            <Button variant="outline" on:click={() => (isDialogOpen = false)}
+              >Cancel</Button
+            >
+            <Button variant="outline" on:click={confirmRent}>Confirm</Button>
+          </Dialog.Footer>
+        </Dialog.Content>
+      </Dialog.Root>
+    {/if}
+
+    {#if selectedTask}
+      <ConfirmationDialog
+        isOpen={isTaskDialogOpen}
+        onConfirm={confirmAcceptTask}
+        onCancel={() => (isTaskDialogOpen = false)}
+        title="Confirm Task Acceptance"
+        description={`Are you sure you want to accept the task "${selectedTask.vehicleName}"?`}
+      />
+    {/if}
   {:else}
     <section class=" ">
       <div
@@ -491,13 +384,13 @@
             href="#"
             class="mr-5 mb-5 lg:mb-0 hover:text-gray-800 dark:hover:text-gray-400"
           >
-            <img src="/vechain.png" />
+            <img src="/vechain.png" alt="VeChain" />
           </a>
           <a
             href="#"
             class="mr-5 mb-5 lg:mb-0 hover:text-gray-800 dark:hover:text-gray-400"
           >
-            <img src="/easya.svg" />
+            <img src="/easya.svg" alt="EasyA" />
           </a>
           <a
             href="#"
