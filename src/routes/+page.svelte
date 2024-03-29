@@ -8,9 +8,81 @@
   import TaskList from "$lib/components/TaskList.svelte";
   import ConfirmationDialog from "$lib/components/ConfirmationDialog.svelte";
   import { generateRandomPoint } from "$lib/extra";
+  import MainPage from "./MainPage.svelte";
 
   let user = writable(null);
-  let tasks = [];
+  let tasks = [
+    {
+      vehicleName: "Scooter#3102",
+      vehicle: "Scooter",
+      distance: 2.0,
+      reward: 12,
+      taskType: "Relocate",
+    },
+    {
+      vehicleName: "E-bike#0473",
+      vehicle: "E-Bike",
+      distance: 0.8,
+      reward: 8,
+      taskType: "Repair",
+    },
+    {
+      vehicleName: "Scooter#8942",
+      vehicle: "Scooter",
+      distance: 1.2,
+      reward: 9,
+      taskType: "Charge",
+    },
+    {
+      vehicleName: "Bike#4382",
+      vehicle: "Bike",
+      distance: 4.0,
+      reward: 25,
+      taskType: "Relocate",
+    },
+    {
+      vehicleName: "E-bike#6731",
+      vehicle: "E-bike",
+      distance: 3.0,
+      reward: 18,
+      taskType: "Repair",
+    },
+    {
+      vehicleName: "E-bike#2951",
+      vehicle: "E-Bike",
+      distance: 2.2,
+      reward: 13,
+      taskType: "Charge",
+    },
+    {
+      vehicleName: "Scooter#1579",
+      vehicle: "Scooter",
+      distance: 3.8,
+      reward: 22,
+      taskType: "Relocate",
+    },
+    {
+      vehicleName: "Bike#4621",
+      vehicle: "Bike",
+      distance: 1.0,
+      reward: 10,
+      taskType: "Repair",
+    },
+    {
+      vehicleName: "E-bike#1985",
+      vehicle: "E-Bike",
+      distance: 4.5,
+      reward: 27,
+      taskType: "Charge",
+    },
+    {
+      vehicleName: "E-bike#0234",
+      vehicle: "E-Bike",
+      distance: 3.2,
+      reward: 19,
+      taskType: "Relocate",
+    },
+  ];
   let selectedTask = null;
   let isTaskDialogOpen = false;
   let isDialogOpen = false;
@@ -178,84 +250,11 @@
 
   onMount(() => {
     user.set(DAppKitUI.wallet.state.address);
+    window.onload = function () {
+      initMap();
+    };
     if ($user) {
-      tasks = [
-        {
-          vehicleName: "E-scooter#3102",
-          vehicle: "E-Scooter",
-          distance: 2.0,
-          reward: 12,
-          taskType: "Relocate",
-        },
-        {
-          vehicleName: "E-bike#0473",
-          vehicle: "E-Bike",
-          distance: 0.8,
-          reward: 8,
-          taskType: "Repair",
-        },
-        {
-          vehicleName: "Scooter#8942",
-          vehicle: "Scooter",
-          distance: 1.2,
-          reward: 9,
-          taskType: "Charge",
-        },
-        {
-          vehicleName: "Bike#4382",
-          vehicle: "Bike",
-          distance: 4.0,
-          reward: 25,
-          taskType: "Relocate",
-        },
-        {
-          vehicleName: "E-scooter#6731",
-          vehicle: "E-Scooter",
-          distance: 3.0,
-          reward: 18,
-          taskType: "Repair",
-        },
-        {
-          vehicleName: "E-bike#2951",
-          vehicle: "E-Bike",
-          distance: 2.2,
-          reward: 13,
-          taskType: "Charge",
-        },
-        {
-          vehicleName: "Scooter#1579",
-          vehicle: "Scooter",
-          distance: 3.8,
-          reward: 22,
-          taskType: "Relocate",
-        },
-        {
-          vehicleName: "Bike#4621",
-          vehicle: "Bike",
-          distance: 1.0,
-          reward: 10,
-          taskType: "Repair",
-        },
-        {
-          vehicleName: "E-scooter#1985",
-          vehicle: "E-Scooter",
-          distance: 4.5,
-          reward: 27,
-          taskType: "Charge",
-        },
-        {
-          vehicleName: "E-bike#0234",
-          vehicle: "E-Bike",
-          distance: 3.2,
-          reward: 19,
-          taskType: "Relocate",
-        },
-      ];
-    }
-    if ($user) {
-      window.onload = function () {
-        initMap();
-      };
+      setTimeout(initMap, 200);
     }
   });
 
@@ -275,12 +274,11 @@
   function confirmRent() {
     isDialogOpen = false;
   }
-  $: user, isDialogOpen, selectedTask;
+  $: user, isDialogOpen, selectedTask, mapElement;
 </script>
 
 <svelte:head>
   <script
-    defer
     async
     src={`https://maps.googleapis.com/maps/api/js?key=${env.PUBLIC_GOOGLE_MAPS_KEY}`}
   ></script>
@@ -338,68 +336,6 @@
       />
     {/if}
   {:else}
-    <section class=" ">
-      <div
-        class="container mx-auto px-4 py-8 lg:py-16 flex flex-col lg:flex-row items-center lg:items-start justify-between max-w-screen-xl"
-      >
-        <div class="lg:w-1/2 text-center lg:text-left">
-          <h1
-            class="text-4xl md:text-5xl xl:text-6xl font-extrabold tracking-tight leading-none dark:text-white mb-4"
-          >
-            VeRide: Bringing Power To The People
-          </h1>
-          <p
-            class="text-gray-500 dark:text-gray-400 md:text-lg lg:text-xl font-light mb-6 lg:mb-8"
-          >
-            Decentralized electric bike sharing platform built, powered, and
-            used by the users themselves.
-          </p>
-          <div>
-            <vdk-button></vdk-button>
-          </div>
-        </div>
-        <div class="lg:w-1/2 mt-8 lg:mt-0 flex justify-center lg:justify-end">
-          <div
-            class="w-full lg:max-w-lg xl:max-w-xl overflow-hidden rounded-lg shadow-lg relative"
-          >
-            <img
-              src="/Hero.webp"
-              alt="mockup"
-              class="w-full h-auto transform hover:scale-105 transition-transform duration-500 ease-in-out"
-            />
-            <div
-              class="absolute inset-0 bg-gradient-to-r from-transparent to-white dark:to-gray-900 opacity-50"
-            ></div>
-          </div>
-        </div>
-      </div>
-      <div
-        class="px-4 mx-auto text-center md:max-w-screen-md lg:max-w-screen-lg lg:px-36"
-      >
-        <span class="font-semibold text-gray-400 uppercase">FEATURED IN</span>
-        <div
-          class="flex flex-wrap justify-center items-center mt-8 text-gray-500 sm:justify-between"
-        >
-          <a
-            href="#"
-            class="mr-5 mb-5 lg:mb-0 hover:text-gray-800 dark:hover:text-gray-400"
-          >
-            <img src="/vechain.png" alt="VeChain" />
-          </a>
-          <a
-            href="#"
-            class="mr-5 mb-5 lg:mb-0 hover:text-gray-800 dark:hover:text-gray-400"
-          >
-            <img src="/easya.svg" alt="EasyA" />
-          </a>
-          <a
-            href="#"
-            class="mr-5 mb-5 lg:mb-0 hover:text-gray-800 dark:hover:text-gray-400"
-          >
-            <img src="/bcg-logo.png.webp" alt="BCG" class="h-11" />
-          </a>
-        </div>
-      </div>
-    </section>
+    <MainPage />
   {/if}
 </div>

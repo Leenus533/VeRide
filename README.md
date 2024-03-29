@@ -25,3 +25,5 @@ Furthermore, parking zones are only set in areas with high demand given the lack
 - **Ensuring Transparency and Trust:** A hallmark of VeChain's blockchain technology is transparency and immutability. Every transaction, from the issuance of VET tokens to the usage of e-scooters, is recorded on the blockchain, ensuring accountability and trust.
 
 In conclusion, **VeChain offers a transformative solution to the challenges facing e-scooter sharing systems in smart cities**. By creating a community-managed e-scooter sharing platform, VeRide paves the way for a cleaner, greener, and more efficient urban transportation ecosystem.
+
+![Alt text](/static/demo.gif)
