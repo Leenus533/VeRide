@@ -1,5 +1,7 @@
 ## VeRide
-**Drive e-scooter adoption with VeChain**, rewarding responsible usage and community participation with VET, fostering a community-managed platform for eco-friendly commuting.
+**EasyA x Cambridge Hackathon Finalist**, 
+[Link to tweet](https://twitter.com/easya_app/status/1769388929365496193/video/2)
+
 
 ## Full Description
 
